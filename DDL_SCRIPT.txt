@@ -1,0 +1,410 @@
+Create Schema SONICSPHERE_AUDIOSTREAMING_APP
+Set search_path to SONICSPHERE_AUDIOSTREAMING_APP
+
+CREATE TABLE Usr (
+    User_Id INT PRIMARY KEY,
+    Pincode INT not NULL,
+    Address VARCHAR(200) not NULL,
+    DOB DATE not NULL,
+    Email VARCHAR(100) not NULL,
+    Gender VARCHAR(10) not NULL,
+    Name VARCHAR(100) not NULL
+);
+
+CREATE TABLE Playlist (
+    Playlist_Id INT PRIMARY KEY,
+    Last_Modify_time TIMESTAMP,
+    Is_Collaborative BOOLEAN ,
+    Access_Status VARCHAR(20) not NULL,
+    Playlist_Name VARCHAR(100) not NULL,
+    Creation_Date DATE not NULL,
+    Creator_Id INT not NULL,
+    FOREIGN KEY (Creator_Id) REFERENCES Usr(User_Id)
+    on update cascade on delete cascade 
+);
+
+CREATE TABLE Account (
+    Account_Id INT PRIMARY KEY,
+    Account_Status VARCHAR(20) not NULL,
+    Password CHAR(8) not NULL,
+    Creator_Id INT not NULL,
+    Registration_Date DATE not NULL,
+    FOREIGN KEY (Creator_Id) REFERENCES Usr(User_Id)
+    on update cascade on delete cascade
+);
+
+CREATE TABLE Subscription (
+    Subscription_Id INT PRIMARY KEY,
+    Amount DECIMAL(10,2) not NULL,
+    Type VARCHAR(50) not NULL,
+    Time_period INTERVAL not NULL
+);
+
+CREATE TABLE Payment (
+    Transaction_Id INT PRIMARY KEY,
+    Method VARCHAR(50) not NULL,
+    Date DATE not NULL,
+    Time TIME not NULL,
+    Payment_Status VARCHAR(20) not NULL,
+    Amount DECIMAL(10,2) not NULL,
+    Payer_Id INT not NULL,
+    Subscription_Id INT not NULL,
+    FOREIGN KEY (Payer_Id) REFERENCES Usr(User_Id)
+    on update cascade on delete cascade ,
+    FOREIGN KEY (Subscription_Id) REFERENCES Subscription(Subscription_Id)
+    on update cascade on delete cascade 
+);
+CREATE TABLE Album (
+    Album_Id INT PRIMARY KEY,
+    Title VARCHAR(100) not NULL,
+    Duration INTERVAL not NULL,
+    Release_Date DATE not NULL
+);
+CREATE TABLE AudioBook (
+    AudioBook_Id INT PRIMARY KEY,
+    Language VARCHAR(50) not NULL,
+    Title VARCHAR(100) not NULL,
+    Duration INTERVAL not NULL,
+    Author_Name VARCHAR(100) not NULL,
+    Release_Date DATE not NULL,
+    Chapter_No INT,
+    Parent_ID INT , 
+    FOREIGN KEY (Parent_Id) REFERENCES AudioBook(AudioBook_Id)
+    on update cascade on delete set NULL 
+);
+CREATE TABLE Song (
+    Song_Id INT PRIMARY KEY,
+    Duration INTERVAL not NULL,
+    Language VARCHAR(50) not NULL,
+    Song_Name VARCHAR(100) not NULL,
+    Release_Date DATE not NULL,
+    Album_Id INT,
+    Version_No INT,
+    Parent_Id INT,
+    FOREIGN KEY (Album_Id) REFERENCES Album(Album_Id) 
+    on update cascade on delete set NULL, 
+    FOREIGN KEY (Parent_Id) REFERENCES Song(Song_Id)
+    on update cascade on delete set NULL 
+);
+CREATE TABLE Podcast (
+    Podcast_Id INT PRIMARY KEY,
+    Duration INTERVAL not NULL,
+    Language VARCHAR(50) not NULL,
+    Podcast_Name VARCHAR(100) not NULL,
+    Guest VARCHAR(100) not NULL,
+    Release_Date DATE not NULL,
+    Episode_No INT,
+    Parent_Id INT,
+    FOREIGN KEY (Parent_Id) REFERENCES Podcast(Podcast_Id)
+    on update cascade on delete set NULL
+);
+CREATE TABLE Artist (
+    Artist_Id INT PRIMARY KEY,
+    Profession VARCHAR(50) not NULL,
+    Artist_Name VARCHAR(100) not NULL,
+    Country VARCHAR(50) not NULL
+);CREATE TABLE Ads (
+    Ad_Id INT PRIMARY KEY,
+    Title VARCHAR(100) not NULL,
+    Budget DECIMAL(10,2) not NULL,
+    Duration INTERVAL not NULL,
+    Advertiser VARCHAR(100) not NULL
+);CREATE TABLE Audio_Genre (
+    AudioBook_Id INT,
+    Type VARCHAR(50),
+    PRIMARY KEY (AudioBook_Id, Type),
+    FOREIGN KEY (AudioBook_Id) REFERENCES AudioBook(AudioBook_Id)
+    on update cascade on delete cascade 
+);CREATE TABLE Song_Genre (
+    Song_Id INT,
+    Type VARCHAR(50),
+    PRIMARY KEY (Song_Id, Type),
+    FOREIGN KEY (Song_Id) REFERENCES Song(Song_Id)
+    on update cascade on delete cascade 
+);CREATE TABLE Podcast_Genre (
+    Podcast_Id INT,
+    Type VARCHAR(50),
+    PRIMARY KEY (Podcast_Id, Type),
+    FOREIGN KEY (Podcast_Id) REFERENCES Podcast(Podcast_Id)
+    on update cascade on delete cascade 
+)CREATE TABLE Language_Pref (
+    User_Id INT,
+    Language VARCHAR(50),
+    PRIMARY KEY (User_Id, Language),
+    FOREIGN KEY (User_Id) REFERENCES Usr(User_Id)
+    on update cascade on delete cascade 
+)CREATE TABLE Genre_Pref (
+    User_Id INT,
+    Type VARCHAR(50),
+    PRIMARY KEY (User_Id, Type),
+    FOREIGN KEY (User_Id) REFERENCES Usr(User_Id)
+    on update cascade on delete cascade 
+)CREATE TABLE Artist_Language (
+    Artist_Id INT,
+    Language VARCHAR(50),
+    PRIMARY KEY (Artist_Id, Language),
+    FOREIGN KEY (Artist_Id) REFERENCES Artist(Artist_Id)
+    on update cascade on delete cascade 
+)CREATE TABLE Follows (
+    User_Id INT,
+    Follower_Id INT,
+    PRIMARY KEY (User_Id, Follower_Id),
+    FOREIGN KEY (User_Id) REFERENCES Usr(User_Id)
+    on update cascade on delete cascade ,
+    FOREIGN KEY (Follower_Id) REFERENCES Usr(User_Id)
+    on update cascade on delete cascade 
+);
+
+CREATE TABLE Modification_Access (
+    User_Id INT,
+    Playlist_Id INT,
+    PRIMARY KEY (User_Id, Playlist_Id),
+    FOREIGN KEY (User_Id) REFERENCES Usr(User_Id)
+    on update cascade on delete cascade ,
+    FOREIGN KEY (Playlist_Id) REFERENCES Playlist(Playlist_Id)
+    on update cascade on delete cascade 
+);
+
+CREATE TABLE Used_By (
+    Account_Id INT,
+    User_Id INT,
+    PRIMARY KEY (Account_Id, User_Id),
+    FOREIGN KEY (User_Id) REFERENCES Usr(User_Id)
+    on update cascade on delete cascade ,
+    FOREIGN KEY (Account_Id) REFERENCES Account(Account_Id)
+    on update cascade on delete cascade 
+);
+
+CREATE TABLE Under (
+    Subscription_Id INT,
+    Account_Id INT,
+    Start_Date DATE not NULL,
+    End_Date DATE not NULL,
+    PRIMARY KEY (Subscription_Id, Account_Id),
+    FOREIGN KEY (Account_Id) REFERENCES Account(Account_Id) 
+    on update cascade on delete cascade , 
+    FOREIGN KEY (Subscription_Id) REFERENCES Subscription(Subscription_Id)
+    on update cascade on delete cascade 
+);
+
+CREATE TABLE Ads_in_Song (
+    Song_Id INT,
+    Ad_Id INT,
+    Start_Date DATE not NULL,
+    End_Date DATE not NULL,
+    PRIMARY KEY (Song_Id, Ad_Id) , 
+    FOREIGN KEY (Song_Id) REFERENCES Song(Song_Id)
+    on update cascade on delete cascade  ,
+    FOREIGN KEY (Ad_Id) REFERENCES Ads(Ad_Id) 
+    on update cascade on delete cascade 
+);
+
+CREATE TABLE Ads_in_Podcast (
+    Podcast_Id INT,
+    Ad_Id INT,
+    Start_Date DATE not NULL,
+    End_Date DATE not NULL,
+    PRIMARY KEY (Podcast_Id, Ad_Id) ,
+    FOREIGN KEY (Podcast_Id) REFERENCES Podcast(Podcast_Id) 
+    on update cascade on delete cascade ,
+    FOREIGN KEY (Ad_Id) REFERENCES Ads(Ad_Id)
+    on update cascade on delete cascade 
+);
+
+CREATE TABLE Ads_in_AudioBook (
+    AudioBook_Id INT,
+    Ad_Id INT,
+    Start_Date DATE not NULL,
+    End_Date DATE not NULL,
+    PRIMARY KEY (AudioBook_Id, Ad_Id),
+    FOREIGN KEY (AudioBook_Id) REFERENCES AudioBook(AudioBook_Id) 
+    on update cascade on delete cascade ,
+    FOREIGN KEY (Ad_Id) REFERENCES Ads(Ad_Id)
+    on update cascade on delete cascade 
+);
+
+CREATE TABLE Narrated_By (
+    Artist_Id INT,
+    AudioBook_Id INT,
+    PRIMARY KEY (Artist_Id, AudioBook_Id),
+    FOREIGN KEY (AudioBook_Id) REFERENCES AudioBook(AudioBook_Id) 
+    on update cascade on delete cascade ,
+    FOREIGN KEY (Artist_Id) REFERENCES Artist(Artist_Id) 
+    on update cascade on delete cascade 
+);
+
+CREATE TABLE Sung_By (
+    Artist_Id INT,
+    Song_Id INT,
+    PRIMARY KEY (Artist_Id, Song_Id),
+    FOREIGN KEY (Artist_Id) REFERENCES Artist(Artist_Id)
+    on update cascade on delete cascade ,
+    FOREIGN KEY (Song_Id) REFERENCES Song(Song_Id)
+    on update cascade on delete cascade 
+);
+
+CREATE TABLE Hosted_By (
+    Artist_Id INT,
+    Podcast_Id INT,
+    PRIMARY KEY (Artist_Id, Podcast_Id),
+    FOREIGN KEY (Artist_Id) REFERENCES Artist(Artist_Id) 
+    on update cascade on delete cascade ,
+    FOREIGN KEY (Podcast_Id) REFERENCES Podcast(Podcast_Id)
+    on update cascade on delete cascade 
+);
+CREATE TABLE Released_By (
+    Artist_Id INT,
+    Album_Id INT,
+    PRIMARY KEY (Artist_Id, Album_Id),
+    FOREIGN KEY (Artist_Id) REFERENCES Artist(Artist_Id)
+    on update cascade on delete cascade ,
+    FOREIGN KEY (Album_Id) REFERENCES Album(Album_Id)
+    on update cascade on delete cascade 
+);
+
+CREATE TABLE Contains (
+    Playlist_Id INT,
+    Song_Id INT,
+    PRIMARY KEY (Playlist_Id, Song_Id),
+    FOREIGN KEY (Playlist_Id) REFERENCES Playlist(Playlist_Id)
+    on update cascade on delete cascade ,
+    FOREIGN KEY (Song_Id) REFERENCES Song(Song_Id)
+    on update cascade on delete cascade 
+);
+
+CREATE TABLE Album_Interaction (
+    Album_Id INT,
+    User_Id INT,
+    User_rating DECIMAL(3,2),
+    Is_Favourite BOOLEAN ,
+    Is_Downloaded BOOLEAN ,
+    PRIMARY KEY (Album_Id, User_Id),
+    FOREIGN KEY (Album_Id) REFERENCES Album(Album_Id)
+    on update cascade on delete cascade ,
+    FOREIGN KEY (User_Id) REFERENCES Usr(User_Id) 
+    on update cascade on delete cascade    
+);
+
+CREATE TABLE AudioBook_Rating (
+    AudioBook_Id INT,
+    User_Id INT,
+    User_rating DECIMAL(3,2) not NULL,
+    PRIMARY KEY (AudioBook_Id, User_Id),
+    FOREIGN KEY (AudioBook_Id) REFERENCES AudioBook(AudioBook_Id)
+    on update cascade on delete cascade ,
+    FOREIGN KEY (User_Id) REFERENCES Usr(User_Id) 
+    on update cascade on delete cascade     
+);
+
+CREATE TABLE AudioBook_Interaction (
+    AudioBook_Id INT,
+    User_Id INT,
+    Is_Downloaded BOOLEAN,
+    Is_Favourite BOOLEAN ,
+    Like_Status VARCHAR(20) ,
+    Play_Count INT ,
+    Share_Count INT ,
+    PRIMARY KEY (AudioBook_Id, User_Id),
+    FOREIGN KEY (AudioBook_Id) REFERENCES AudioBook(AudioBook_Id)
+    on update cascade on delete cascade ,
+    FOREIGN KEY (User_Id) REFERENCES Usr(User_Id)
+    on update cascade on delete cascade 
+);
+
+
+CREATE TABLE AudioBook_Comment (
+    AudioBook_Id INT,
+    User_Id INT,
+    User_Comment VARCHAR(200) not NULL,
+    PRIMARY KEY (AudioBook_Id, User_Id),
+    FOREIGN KEY (AudioBook_Id) REFERENCES AudioBook(AudioBook_Id)
+    on update cascade on delete cascade ,
+    FOREIGN KEY (User_Id) REFERENCES Usr(User_Id)
+    on update cascade on delete cascade 
+);
+
+CREATE TABLE Song_Rating (
+    Song_Id INT,
+    User_Id INT,
+    User_rating DECIMAL(3,2) not NULL,
+    PRIMARY KEY (Song_Id, User_Id),
+    FOREIGN KEY (Song_Id) REFERENCES Song(Song_Id)
+    on update cascade on delete cascade ,
+    FOREIGN KEY (User_Id) REFERENCES Usr(User_Id)
+    on update cascade on delete cascade 
+);
+
+CREATE TABLE Song_Interaction (
+    Song_Id INT,
+    User_Id INT,
+    Is_Downloaded BOOLEAN ,
+    Is_Favourite BOOLEAN ,
+    Like_Status VARCHAR(20) ,
+    Play_Count INT ,
+    Share_Count INT ,
+    PRIMARY KEY (Song_Id, User_Id),
+    FOREIGN KEY (Song_Id) REFERENCES Song(Song_Id)
+    on update cascade on delete cascade ,
+    FOREIGN KEY (User_Id) REFERENCES Usr(User_Id)
+    on update cascade on delete cascade 
+);
+
+CREATE TABLE Song_Comment (
+    Song_Id INT,
+    User_Id INT,
+    User_Comment VARCHAR(200) not NULL,
+    PRIMARY KEY (Song_Id, User_Id),
+    FOREIGN KEY (Song_Id) REFERENCES Song(Song_Id)
+    on update cascade on delete cascade ,
+    FOREIGN KEY (User_Id) REFERENCES Usr(User_Id)
+    on update cascade on delete cascade 
+);
+
+CREATE TABLE Podcast_Rating (
+    Podcast_Id INT,
+    User_Id INT,
+    User_rating DECIMAL(3,2) not NULL,
+    PRIMARY KEY (Podcast_Id, User_Id),
+    FOREIGN KEY (Podcast_Id) REFERENCES Podcast(Podcast_Id)
+    on update cascade on delete cascade ,
+    FOREIGN KEY (User_Id) REFERENCES Usr(User_Id)
+    on update cascade on delete cascade 
+);
+
+CREATE TABLE Podcast_Interaction (
+    Podcast_Id INT,
+    User_Id INT,
+    Is_Downloaded BOOLEAN,
+    Is_Favourite BOOLEAN,
+    Like_Status VARCHAR(20),
+    Play_Count INT,
+    Share_Count INT,
+    PRIMARY KEY (Podcast_Id, User_Id),
+    FOREIGN KEY (Podcast_Id) REFERENCES Podcast(Podcast_Id)
+    on update cascade on delete cascade ,
+    FOREIGN KEY (User_Id) REFERENCES Usr(User_Id)
+    on update cascade on delete cascade 
+);
+
+CREATE TABLE Podcast_Comment (
+    Podcast_Id INT,
+    User_Id INT,
+    User_Comment VARCHAR(200) not NULL,
+    PRIMARY KEY (Podcast_Id, User_Id),
+    FOREIGN KEY (Podcast_Id) REFERENCES Podcast(Podcast_Id)
+    on update cascade on delete cascade ,
+    FOREIGN KEY (User_Id) REFERENCES Usr(User_Id)
+    on update cascade on delete cascade 
+);
+
+CREATE TABLE Artist_Interaction (
+    Artist_Id INT,
+    User_Id INT,
+    Is_Favourite BOOLEAN ,
+    Is_Following BOOLEAN ,
+    PRIMARY KEY (Artist_Id, User_Id),
+    FOREIGN KEY (Artist_Id) REFERENCES Artist(Artist_Id)
+    on update cascade on delete cascade ,
+    FOREIGN KEY (User_Id) REFERENCES Usr(User_Id)
+    on update cascade on delete cascade 
+);
